@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'social_django',
     'app',
+
 ]
 
 MIDDLEWARE = [
@@ -68,11 +72,12 @@ TEMPLATES = [
     },
 ]
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+
 }
 
 WSGI_APPLICATION = 'core.wsgi.application'
@@ -130,14 +135,86 @@ USE_L10N = True
 
 USE_TZ = True
 
+ROOT_URLCONF = 'core.urls'
+LOGIN_REDIRECT_URL = "app:home"  # Route defined in urls.py
+LOGOUT_REDIRECT_URL = "app:home"  # Route defined in urls.py
+
+# social-auth
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    # 'social_core.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+""" Required pipeline and Custom ones can be added here"""
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    # 'social_core.pipeline.social_auth.auth_allowed',
+    'core.pipeline.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',  # <--- enable this one
+    'social_core.pipeline.user.create_user',
+    'core.pipeline.get_avatar',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+SOUTH_MIGRATION_MODULES = {
+    'default': 'social.apps.django_app.default.south_migrations'
+}
+
+#############################################################
+# SRC: https://devcenter.heroku.com/articles/django-assets
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
 STATIC_URL = '/static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(CORE_DIR, 'app/static/'),
+)
+
+
+STATIC_ROOT = os.path.join(CORE_DIR, 'staticfiles')
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'app.CustomUser'  # new
+
+
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/unauthorized_domain'
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+
+SOCIAL_AUTH_USER_MODEL = 'app.CustomUser'  # Setting Custom User Model
+SOCIAL_AUTH_GOOGLE_OAUTH2_USER_FIELDS = [
+    'first_name', 'last_name', 'email', 'username']
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = [
+    'username', 'first_name', 'email', 'username', 'last_name']
+# SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['google.com', 'google'] # Allowed host for our access
+SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ['google']
+SOCIAL_AUTH_GOOGLE_OAUTH_USE_UNIQUE_USER_ID = True
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+# SOCIAL_AUTH_JSONFIELD_CUSTOM = 'django.contrib.postgres.fields.JSONField'
+SOCIAL_AUTH_JSONFIELD_CUSTOM = 'django.db.models.JSONField'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "457391484482-8dtrkl5nn858g3qmmvtgf24uabmnc6au.apps.googleusercontent.com"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+
+# Redirect after login
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/books'
+
+SESSION_COOKIE_AGE = 21600
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_COOKIE_SECURE = False
+
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_HTTPONLY = False
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['google_state']
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_IDLE_TIMEOUT = 3600
+SESSION_TIMEOUT_REDIRECT = '/'

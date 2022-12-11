@@ -5,3 +5,6 @@ markdown
 python-dateutil
 jsonfield
 mysqlclient
+django-session-timeout==0.1.0
+social-auth-app-django==5.0.0
+social-auth-core==4.2.0

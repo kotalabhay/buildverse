@@ -9,7 +9,8 @@ from django.utils.html import mark_safe
 from dateutil import parser
 # Create your models here.
 from datetime import datetime, date, timedelta
-
+from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, pre_delete, post_delete
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, first_name, last_name, password=None):
@@ -73,6 +74,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(verbose_name='Date Joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='Last Login', auto_now=True)
     picture = models.URLField(max_length=200, blank=True, null=True)
+    TYPE_CHOICES = (
+        ('anyone ', 'Anyone '),
+        ('student', 'Student'),
+        ('librarian', 'Librarian'),
+    )
+    user_type = models.CharField(max_length=50, blank=False, null=False, choices=TYPE_CHOICES, default="student")
     is_active = models.BooleanField(default=True, help_text='Designates whether this user should be treated as active')
     is_staff = models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site')
     USERNAME_FIELD = 'username'   # Mandate field for authentication email,uid, username( any that is Unique)
@@ -123,6 +130,7 @@ class Language(models.Model):
         verbose_name_plural = "Languages"
         ordering = ('name',)
 
+
 class Book(models.Model):
     id = models.AutoField(primary_key=True, null=False)
     title = models.CharField(max_length=200)
@@ -135,7 +143,7 @@ class Book(models.Model):
         Genre, help_text="Select a genre for this book")
     language = models.ManyToManyField(
         Language, help_text="Select a Language for this book")
-    total_copies = models.IntegerField()
+    total_copies = models.IntegerField(default=10)
     pic = models.URLField(max_length=200, blank=True, null=True)
     available_copies = models.IntegerField(name='available_copies')
     return_days = models.IntegerField(help_text='Return Days', default=30)
@@ -156,11 +164,15 @@ class Borrower(models.Model):
     book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True, blank=True)
     issue_date = models.DateTimeField(auto_now_add=True)
     return_date = models.DateTimeField(null=True, blank=True)
+    is_borrowed = models.BooleanField(default=True)
+    book_returned = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username + " borrowed " + self.book.title
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            self.issue_date = datetime.now()
         self.return_date = self.issue_date + timedelta(days=self.book.return_days)
         super(Borrower, self).save(*args, **kwargs)
 
@@ -185,5 +197,25 @@ class Borrower(models.Model):
         ordering = ('user',)
 
 
+def borrower_update_copies(sender, instance, created, **kwargs):
 
+    try:
+        # Case when Borrower is created
+        if created:
+            instance.book.available_copies -= 1
 
+        # Case when Borrowed Record might have been updated but still book is borrowed
+        if instance.is_borrowed is True:
+            pass
+
+        elif instance.is_borrowed is False:
+            instance.book.available_copies += 1
+            if not instance.book.book_returned:
+                instance.book.book_returned = datetime.now()
+
+        instance.book.save()
+
+    except:
+        raise ValueError('Error while updating')
+
+post_save.connect(borrower_update_copies, sender=Borrower)
