@@ -8,6 +8,8 @@ from django.dispatch import receiver
 from django.utils.html import mark_safe
 from dateutil import parser
 # Create your models here.
+from datetime import datetime, date, timedelta
+
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, first_name, last_name, password=None):
@@ -136,7 +138,7 @@ class Book(models.Model):
     total_copies = models.IntegerField()
     pic = models.URLField(max_length=200, blank=True, null=True)
     available_copies = models.IntegerField(name='available_copies')
-    return_days = models.IntegerField(name='Return Days', default=30)
+    return_days = models.IntegerField(help_text='Return Days', default=30)
 
     def __str__(self):
         return self.title
@@ -150,18 +152,31 @@ class Book(models.Model):
 
 class Borrower(models.Model):
     id = models.AutoField(primary_key=True, null=False)
-    user = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True , blank=True)
-    book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True , blank=True)
+    user = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
+    book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True, blank=True)
     issue_date = models.DateTimeField(auto_now_add=True)
     return_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username + " borrowed " + self.book.title
 
+    def save(self, *args, **kwargs):
+        self.return_date = self.issue_date + timedelta(days=self.book.return_days)
+        super(Borrower, self).save(*args, **kwargs)
 
-    def save(self):
+    def overdue_status(self):
+        today = datetime.today()
+        if today > self.return_date:
+            return True
+        else:
+            return False
 
-
+    def overdue_count_days(self):
+        today = datetime.today()
+        if today > self.return_date:
+            return (self.return_date - today).days
+        else:
+            return 0
 
     class Meta:
         db_table = "borrower"
