@@ -1,0 +1,49 @@
+.user-profile .card {
+    min-height: 90vh;
+    max-height: fit-content;
+}
+
+.dataTable-wrapper .dataTable-top {
+    padding: 0.5rem;
+}
+
+.dataTables_length {
+    display: none;
+}
+
+.user-details {
+    position: relative;
+    max-width: 250px;
+}
+
+.user-crown {
+    position: absolute;
+    color: #facc15;
+    transform: translate(-10px, -15px) rotate(-25deg);
+}
+
+.edit-criticality {
+    display: none;
+}
+
+.select-criticality {
+    min-height: unset;
+    min-width: max-content;
+    padding: 0.1em 0.9em;
+    font-size: 0.75em;
+}
+
+#secondary-email-address-spinner {
+    display: none;
+}
+
+@media screen and (max-width:768px) {
+    .user-profile-details {
+        margin-top: 5px;
+    }
+
+    .user-profile .card {
+        min-height: fit-content;
+        max-height: fit-content;
+    }
+}

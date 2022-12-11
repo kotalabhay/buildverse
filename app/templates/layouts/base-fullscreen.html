@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="description" content="Argon">
+  <meta name="keywords" content="Argon">
+  <meta name="author" content="Ascent Wellness and Pharma Solutions Pvt. Ltd.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <meta http-equiv="pragma" content="no-cache">
+  <title>
+    Argon - {% block title %}{% endblock %}
+  </title>
+  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon_argon.ico' %}">
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/favicon_argon.ico' %}">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+  <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
+  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
+  <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.min.css' %}" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'assets/css/custom-table.css' %}" />
+  <style>
+    .async-hide {
+      opacity: 0 !important
+    }
+  </style>
+
+  {% block stylesheets %}{% endblock stylesheets %}
+</head>
+
+<body class="login-body">
+  {% block content %}{% endblock content %}
+
+  {% include "includes/scripts.html" %}
+
+  {% block javascripts %}{% endblock javascripts %}
+</body>
+
+</html>

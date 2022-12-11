@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Books {% endblock title %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'assets/css/home/my_borrowed_books.css' %}" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid ps-xl-5 px-1 py-xl-1 py-3 overflow-x-hidden">
+  <div class="row">
+    <div class="col-12">
+      <div class="card main-card">
+        <div class="card-header pb-0">
+          <div class="d-lg-flex">
+            <div>
+              <h5 class="mb-0">Borrowed Books</h5>
+            </div>
+          </div>
+        </div>
+        <div class="card-body px-3 pb-0">
+          <div class="table-responsive">
+           <table class="table table-flush dataTable-table" id="borrowed-list" style="width: 100%;">
+              <thead class="thead-light">
+                <tr>
+                  <th class="text-dark">Borrowed ID</th>
+                  <th class="text-dark">Book Name</th>
+                  <th class="text-dark">Returned Book</th>
+                  <th class="text-dark">Returned Book Date</th>
+                  <th class="text-dark">Due Date</th>
+                  <th class="text-dark">Issue Date</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card content-card" style="display: none;">
+        <div class="card-header pb-0">
+          <div class="d-lg-flex align-items-baseline">
+            <div class="me-3">
+              <a href="#" onclick="backToMain()"><i class="fa fa-arrow-left"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock content %}
+
+{% block javascripts %}
+<script src="{% static 'assets/js/home/my_borrowed_books.js' %}"></script>
+{% endblock javascripts %}
