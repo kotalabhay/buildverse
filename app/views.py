@@ -15,12 +15,13 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import generics
 from .serializers import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+
 
 def login_view(request):
     return render(request, "accounts/login.html")
@@ -36,7 +37,7 @@ def index(request):
     context = {"segment": "index"}
     html_template = loader.get_template("home/index.html")
     return redirect("/books")
-    #return HttpResponse(html_template.render(context, request))
+    # return HttpResponse(html_template.render(context, request))
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
@@ -62,11 +63,10 @@ def pages(request):
     except template.TemplateDoesNotExist:
         html_template = loader.get_template("home/page-404.html")
         return HttpResponse(html_template.render(context, request))
+
     except:
         html_template = loader.get_template("home/page-500.html")
         return HttpResponse(html_template.render(context, request))
-
-
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
@@ -80,8 +80,10 @@ def books(request):
     html_template = loader.get_template("home/books.html")
     return HttpResponse(html_template.render(context, request))
 
+
 class BooksData(APIView):
     permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         try:
             queryset = Book.objects.all()
@@ -93,8 +95,6 @@ class BooksData(APIView):
                 return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 
 @login_required(login_url=LOGIN_REDIRECT_URL)
@@ -111,6 +111,7 @@ def my_borrowed_books(request):
 
 class BorrowedBooksData(APIView):
     permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         try:
             queryset = Borrower.objects.filter(user__username=str(request.user))
@@ -126,6 +127,7 @@ class BorrowedBooksData(APIView):
 
 class LibrarianData(APIView):
     permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         try:
             queryset = Borrower.objects.filter(is_borrowed=True)
@@ -138,6 +140,7 @@ class LibrarianData(APIView):
         except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 def librarian(request):
     """
 
@@ -149,8 +152,29 @@ def librarian(request):
     return HttpResponse(html_template.render(context, request))
 
 
+# Creating Remaining API Calls
+# Returning all the expected of books  Returning Date If No COpy is available
 
+class BorrowedBooksData(APIView):
+    model = Borrower
+    serializer_class = BorrowerSerializer
 
+    def get(self, request, format=None):
+        try:
+            queryset = Borrower.objects.filter(is_borrowed=True)
+            book_id = self.request.query_params.get('book_id')
 
+            if book_id:
+                queryset = queryset.filter(book__id=book_id)
+
+            queryset = queryset.order_by('-return_date')
+            serializer = BorrowerSerializer(queryset, many=True)
+            if serializer:
+                data = {'data': serializer.data}
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
