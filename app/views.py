@@ -111,20 +111,31 @@ def my_borrowed_books(request):
 
 class BorrowedBooksData(APIView):
     permission_classes = (IsAuthenticated,)
-
-    def post(self, request, format=None):
+    def get(self, request, format=None):
         try:
-            queryset = Borrower.objects.all()
+            queryset = Borrower.objects.filter(user__username=str(request.user))
             serializer = BorrowerSerializer(queryset, many=True)
-            print("Data", serializer)
             if serializer:
                 data = {'data': serializer.data}
-                print(data)
                 return Response(data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
-            raise(e)
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LibrarianData(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        try:
+            queryset = Borrower.objects.filter(is_borrowed=True)
+            serializer = BorrowerSerializer(queryset, many=True)
+            if serializer:
+                data = {'data': serializer.data}
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def librarian(request):

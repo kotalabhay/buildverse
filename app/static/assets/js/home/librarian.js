@@ -6,12 +6,12 @@ $(function () {
 
 
 function load() {
-    $('#borrowed-list').DataTable({
+    $('#librarian-list').DataTable({
         destroy: true,
         processing: true,
         ajax: {
             type: "GET",
-            url: "/my_borrowed_books_data",
+            url: "/librarian_data",
             headers: { 'X-CSRFToken': csrftoken },
             mode: 'same-origin',
             dataSrc: 'data',
