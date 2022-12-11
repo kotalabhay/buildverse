@@ -38,11 +38,11 @@ class BookSerializer(ModelSerializer):
 
 
 class BorrowerSerializer(ModelSerializer):
-    genre = GenreSerializer(many=True, read_only=True)
-    language = LanguageSerializer(many=True, read_only=True)
+    # genre = GenreSerializer(many=True, read_only=True)
+    # language = LanguageSerializer(many=True, read_only=True)
     book_name = serializers.CharField(source='book.title', read_only=True)
 
     class Meta:
         model = Borrower
-        fields = ('id', 'issue_date', 'book_name', 'return_date', 'is_borrowed', 'book_returned', 'language', 'genre')
-        extra_kwargs = {'genre': {'required': False}, 'language': {'required': False}}
+        fields = ('id', 'issue_date', 'book_name', 'return_date', 'is_borrowed', 'book_returned',)
+        # extra_kwargs = {'genre': {'required': False}, 'language': {'required': False}}

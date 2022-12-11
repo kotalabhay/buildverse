@@ -116,9 +116,10 @@ class BorrowedBooksData(APIView):
         try:
             queryset = Borrower.objects.all()
             serializer = BorrowerSerializer(queryset, many=True)
+            print("Data", serializer)
             if serializer:
                 data = {'data': serializer.data}
-
+                print(data)
                 return Response(data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
